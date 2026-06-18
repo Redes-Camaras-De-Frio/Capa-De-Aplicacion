@@ -1,0 +1,301 @@
+@startuml
+title Diagrama de Clases — Capa de Aplicación
+
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Arial
+
+package "Middleware" {
+  class Auth {
+    +verificarToken(req, res, next)
+    +requiereRol(...roles)
+  }
+
+  class ValidateId {
+    +validateId(req, res, next)
+    +validateQueryInt(paramName)
+  }
+}
+
+package "Rutas / Routes" {
+  class RouteIndex {
+    +GET /api
+    +/auth/*
+    +/sedes/*
+    +/camaras/*
+    +/sensores/*
+    +/lecturas/*
+    +/alertas/*
+    +/dashboard/*
+  }
+
+  class AuthRoutes {
+    +POST /login
+    +POST /register
+  }
+
+  class SedeRoutes {
+    +GET /
+    +GET /:id
+    +POST /
+    +PUT /:id
+    +DELETE /:id
+  }
+
+  class CamaraRoutes {
+    +GET /
+    +GET /:id
+    +POST /
+    +PUT /:id
+    +DELETE /:id
+  }
+
+  class SensorRoutes {
+    +GET /
+    +GET /:id
+    +POST /
+    +PUT /:id
+    +DELETE /:id
+  }
+
+  class LecturaRoutes {
+    +GET /
+    +GET /ultimas-por-camara
+  }
+
+  class AlertaRoutes {
+    +GET /
+    +GET /:id
+    +PATCH /:id/resolver
+  }
+
+  class DashboardRoutes {
+    +GET /
+  }
+}
+
+package "Controladores" {
+  class AuthController {
+    +login(req, res)
+    +registrar(req, res)
+  }
+
+  class SedeController {
+    +listar(req, res)
+    +obtenerPorId(req, res)
+    +crear(req, res)
+    +actualizar(req, res)
+    +eliminar(req, res)
+  }
+
+  class CamaraController {
+    +listar(req, res)
+    +obtenerPorId(req, res)
+    +crear(req, res)
+    +actualizar(req, res)
+    +eliminar(req, res)
+  }
+
+  class SensorController {
+    +listar(req, res)
+    +obtenerPorId(req, res)
+    +crear(req, res)
+    +actualizar(req, res)
+    +eliminar(req, res)
+  }
+
+  class LecturaController {
+    +listar(req, res)
+    +ultimasPorCamara(req, res)
+  }
+
+  class AlertaController {
+    +listar(req, res)
+    +obtenerPorId(req, res)
+    +resolver(req, res)
+  }
+
+  class DashboardController {
+    +resumen(req, res)
+  }
+}
+
+package "Servicios" {
+  class AuthService {
+    +login(email, password)
+    +registrar({ nombre, email, password, rol })
+  }
+
+  class SedeService {
+    +obtenerTodasLasSedes()
+    +obtenerSedePorId(id)
+    +crearSede({ nombre, tipo, direccion })
+    +actualizarSede(id, campos)
+    +eliminarSede(id)
+  }
+
+  class CamaraService {
+    +obtenerTodasLasCamaras(sedeId)
+    +obtenerCamaraPorId(id)
+    +crearCamara({ sede_id, nombre, temp_min, temp_max, activa })
+    +actualizarCamara(id, campos)
+    +eliminarCamara(id)
+  }
+
+  class SensorService {
+    +obtenerTodosLosSensores(camaraId)
+    +obtenerSensorPorId(id)
+    +crearSensor({ camara_id, tipo, unidad, activo })
+    +actualizarSensor(id, campos)
+    +eliminarSensor(id)
+  }
+
+  class LecturaService {
+    +obtenerLecturas(sensorId, limite)
+    +obtenerUltimasLecturasPorCamara()
+  }
+
+  class AlertaService {
+    +obtenerAlertas({ resuelta, limite })
+    +obtenerAlertaPorId(id)
+    +resolverAlerta(id, usuarioId)
+  }
+
+  class DashboardService {
+    +obtenerResumen()
+  }
+}
+
+package "Config" {
+  class DatabaseConfig {
+    +pool
+    +testConnection()
+  }
+
+  class SwaggerConfig {
+    +swaggerSpec
+  }
+}
+
+package "Modelo de Datos (BD)" {
+  class Usuario {
+    +id
+    +nombre
+    +email
+    +password_hash
+    +rol
+    +activo
+    +created_at
+  }
+
+  class Sede {
+    +id
+    +nombre
+    +tipo
+    +direccion
+    +created_at
+  }
+
+  class Camara {
+    +id
+    +sede_id
+    +nombre
+    +temp_min
+    +temp_max
+    +activa
+    +created_at
+  }
+
+  class Sensor {
+    +id
+    +camara_id
+    +tipo
+    +unidad
+    +activo
+    +created_at
+  }
+
+  class Lectura {
+    +id
+    +sensor_id
+    +valor
+    +registrado_en
+  }
+
+  class Alerta {
+    +id
+    +camara_id
+    +sensor_id
+    +lectura_id
+    +tipo
+    +mensaje
+    +resuelta
+    +creado_en
+    +resuelto_en
+    +resuelto_por
+  }
+}
+
+' RouteIndex -> Rutas específicas
+RouteIndex ..> AuthRoutes
+RouteIndex ..> SedeRoutes
+RouteIndex ..> CamaraRoutes
+RouteIndex ..> SensorRoutes
+RouteIndex ..> LecturaRoutes
+RouteIndex ..> AlertaRoutes
+RouteIndex ..> DashboardRoutes
+
+' Routes -> Middleware
+AuthRoutes ..> Auth
+SedeRoutes ..> Auth
+SedeRoutes ..> ValidateId
+CamaraRoutes ..> Auth
+CamaraRoutes ..> ValidateId
+SensorRoutes ..> Auth
+SensorRoutes ..> ValidateId
+LecturaRoutes ..> Auth
+LecturaRoutes ..> ValidateId
+AlertaRoutes ..> Auth
+AlertaRoutes ..> ValidateId
+DashboardRoutes ..> Auth
+
+' Controllers -> Routes
+AuthRoutes ..> AuthController
+SedeRoutes ..> SedeController
+CamaraRoutes ..> CamaraController
+SensorRoutes ..> SensorController
+LecturaRoutes ..> LecturaController
+AlertaRoutes ..> AlertaController
+DashboardRoutes ..> DashboardController
+
+' Controllers -> Services
+AuthController ..> AuthService
+SedeController ..> SedeService
+CamaraController ..> CamaraService
+SensorController ..> SensorService
+LecturaController ..> LecturaService
+AlertaController ..> AlertaService
+DashboardController ..> DashboardService
+
+' Services -> Database
+AuthService ..> DatabaseConfig
+SedeService ..> DatabaseConfig
+CamaraService ..> DatabaseConfig
+SensorService ..> DatabaseConfig
+LecturaService ..> DatabaseConfig
+AlertaService ..> DatabaseConfig
+DashboardService ..> DatabaseConfig
+
+' App -> Config
+RouteIndex ..> SwaggerConfig
+
+' Relaciones entre modelos (BD)
+Sede "1" o-- "0..*" Camara : tiene
+Camara "1" o-- "0..*" Sensor : contiene
+Sensor "1" o-- "0..*" Lectura : genera
+Camara "1" o-- "0..*" Alerta : dispara
+Lectura "0..1" o-- "0..*" Alerta : referencia
+Alerta "0..1" -- "0..1" Usuario : resuelto_por
+
+@enduml
