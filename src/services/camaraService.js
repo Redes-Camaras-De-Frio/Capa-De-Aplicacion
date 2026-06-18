@@ -1,16 +1,32 @@
 const { pool } = require('../config/database');
 
-async function obtenerTodasLasCamaras(sedeId) {
-  const query = sedeId
-    ? 'SELECT * FROM camaras WHERE sede_id = $1 ORDER BY id'
-    : 'SELECT * FROM camaras ORDER BY id';
-  const params = sedeId ? [sedeId] : [];
+async function obtenerTodasLasCamaras(sedeId, usuario) {
+  const esAdmin = usuario.rol === 'admin';
+
+  let query, params;
+  if (esAdmin) {
+    query = sedeId
+      ? 'SELECT * FROM camaras WHERE sede_id = $1 ORDER BY id'
+      : 'SELECT * FROM camaras ORDER BY id';
+    params = sedeId ? [sedeId] : [];
+  } else {
+    query = sedeId
+      ? 'SELECT * FROM camaras WHERE sede_id = $1 AND sede_id = ANY($2) ORDER BY id'
+      : 'SELECT * FROM camaras WHERE sede_id = ANY($1) ORDER BY id';
+    params = sedeId ? [sedeId, usuario.sedes] : [usuario.sedes];
+  }
+
   const result = await pool.query(query, params);
   return result.rows;
 }
 
-async function obtenerCamaraPorId(id) {
-  const result = await pool.query('SELECT * FROM camaras WHERE id = $1', [id]);
+async function obtenerCamaraPorId(id, usuario) {
+  const esAdmin = usuario.rol === 'admin';
+  const query = esAdmin
+    ? 'SELECT * FROM camaras WHERE id = $1'
+    : 'SELECT * FROM camaras WHERE id = $1 AND sede_id = ANY($2)';
+  const params = esAdmin ? [id] : [id, usuario.sedes];
+  const result = await pool.query(query, params);
   return result.rows[0] || null;
 }
 

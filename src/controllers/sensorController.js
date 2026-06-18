@@ -3,7 +3,7 @@ const sensorService = require('../services/sensorService');
 async function listar(req, res) {
   try {
     const camaraId = req.query.camara_id || null;
-    const sensores = await sensorService.obtenerTodosLosSensores(camaraId);
+    const sensores = await sensorService.obtenerTodosLosSensores(camaraId, req.usuario);
     res.json({ datos: sensores, total: sensores.length });
   } catch (err) {
     console.error('[sensorController] Error:', err.message);
@@ -13,7 +13,7 @@ async function listar(req, res) {
 
 async function obtenerPorId(req, res) {
   try {
-    const sensor = await sensorService.obtenerSensorPorId(req.params.id);
+    const sensor = await sensorService.obtenerSensorPorId(req.params.id, req.usuario);
     if (!sensor) return res.status(404).json({ error: 'Sensor no encontrado' });
     res.json({ datos: sensor });
   } catch (err) {

@@ -10,6 +10,7 @@ package "Middleware" {
   class Auth {
     +verificarToken(req, res, next)
     +requiereRol(...roles)
+    +verificarAccesoSede(req, res, next)
   }
 
   class ValidateId {
@@ -124,46 +125,46 @@ package "Controladores" {
 package "Servicios" {
   class AuthService {
     +login(email, password)
-    +registrar({ nombre, email, password, rol })
+    +registrar({ nombre, email, password, rol, sedes })
   }
 
   class SedeService {
-    +obtenerTodasLasSedes()
-    +obtenerSedePorId(id)
+    +obtenerTodasLasSedes(usuario)
+    +obtenerSedePorId(id, usuario)
     +crearSede({ nombre, tipo, direccion })
     +actualizarSede(id, campos)
     +eliminarSede(id)
   }
 
   class CamaraService {
-    +obtenerTodasLasCamaras(sedeId)
-    +obtenerCamaraPorId(id)
+    +obtenerTodasLasCamaras(sedeId, usuario)
+    +obtenerCamaraPorId(id, usuario)
     +crearCamara({ sede_id, nombre, temp_min, temp_max, activa })
     +actualizarCamara(id, campos)
     +eliminarCamara(id)
   }
 
   class SensorService {
-    +obtenerTodosLosSensores(camaraId)
-    +obtenerSensorPorId(id)
+    +obtenerTodosLosSensores(camaraId, usuario)
+    +obtenerSensorPorId(id, usuario)
     +crearSensor({ camara_id, tipo, unidad, activo })
     +actualizarSensor(id, campos)
     +eliminarSensor(id)
   }
 
   class LecturaService {
-    +obtenerLecturas(sensorId, limite)
-    +obtenerUltimasLecturasPorCamara()
+    +obtenerLecturas(sensorId, limite, usuario)
+    +obtenerUltimasLecturasPorCamara(usuario)
   }
 
   class AlertaService {
-    +obtenerAlertas({ resuelta, limite })
-    +obtenerAlertaPorId(id)
+    +obtenerAlertas({ resuelta, limite, usuario })
+    +obtenerAlertaPorId(id, usuario)
     +resolverAlerta(id, usuarioId)
   }
 
   class DashboardService {
-    +obtenerResumen()
+    +obtenerResumen(usuario)
   }
 }
 
@@ -235,6 +236,11 @@ package "Modelo de Datos (BD)" {
     +resuelto_en
     +resuelto_por
   }
+
+  class UsuarioSede {
+    +usuario_id
+    +sede_id
+  }
 }
 
 ' RouteIndex -> Rutas específicas
@@ -291,6 +297,8 @@ DashboardService ..> DatabaseConfig
 RouteIndex ..> SwaggerConfig
 
 ' Relaciones entre modelos (BD)
+Usuario "1" o-- "0..*" UsuarioSede : tiene
+Sede "1" o-- "0..*" UsuarioSede : asignada a
 Sede "1" o-- "0..*" Camara : tiene
 Camara "1" o-- "0..*" Sensor : contiene
 Sensor "1" o-- "0..*" Lectura : genera

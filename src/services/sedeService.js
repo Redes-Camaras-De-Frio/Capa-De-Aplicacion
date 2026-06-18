@@ -1,17 +1,22 @@
 const { pool } = require('../config/database');
 
-async function obtenerTodasLasSedes() {
-  const result = await pool.query(
-    'SELECT id, nombre, tipo, direccion, created_at FROM sedes ORDER BY id'
-  );
+async function obtenerTodasLasSedes(usuario) {
+  const esAdmin = usuario.rol === 'admin';
+  const query = esAdmin
+    ? 'SELECT id, nombre, tipo, direccion, created_at FROM sedes ORDER BY id'
+    : 'SELECT id, nombre, tipo, direccion, created_at FROM sedes WHERE id = ANY($1) ORDER BY id';
+  const params = esAdmin ? [] : [usuario.sedes];
+  const result = await pool.query(query, params);
   return result.rows;
 }
 
-async function obtenerSedePorId(id) {
-  const result = await pool.query(
-    'SELECT id, nombre, tipo, direccion, created_at FROM sedes WHERE id = $1',
-    [id]
-  );
+async function obtenerSedePorId(id, usuario) {
+  const esAdmin = usuario.rol === 'admin';
+  const query = esAdmin
+    ? 'SELECT id, nombre, tipo, direccion, created_at FROM sedes WHERE id = $1'
+    : 'SELECT id, nombre, tipo, direccion, created_at FROM sedes WHERE id = $1 AND id = ANY($2)';
+  const params = esAdmin ? [id] : [id, usuario.sedes];
+  const result = await pool.query(query, params);
   return result.rows[0] || null;
 }
 

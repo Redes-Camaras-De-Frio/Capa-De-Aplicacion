@@ -1,6 +1,6 @@
 const { pool } = require('../config/database');
 
-async function obtenerAlertas({ resuelta, limite = 50 }) {
+async function obtenerAlertas({ resuelta, limite = 50, usuario }) {
   let query = `
     SELECT a.*, c.nombre AS camara_nombre, s.tipo AS sensor_tipo
     FROM alertas a
@@ -15,6 +15,11 @@ async function obtenerAlertas({ resuelta, limite = 50 }) {
     params.push(resuelta);
   }
 
+  if (usuario.rol !== 'admin') {
+    conditions.push(`c.sede_id = ANY($${params.length + 1})`);
+    params.push(usuario.sedes);
+  }
+
   if (conditions.length > 0) {
     query += ' WHERE ' + conditions.join(' AND ');
   }
@@ -26,15 +31,21 @@ async function obtenerAlertas({ resuelta, limite = 50 }) {
   return result.rows;
 }
 
-async function obtenerAlertaPorId(id) {
-  const result = await pool.query(
-    `SELECT a.*, c.nombre AS camara_nombre, s.tipo AS sensor_tipo
-     FROM alertas a
-     JOIN camaras c ON c.id = a.camara_id
-     LEFT JOIN sensores s ON s.id = a.sensor_id
-     WHERE a.id = $1`,
-    [id]
-  );
+async function obtenerAlertaPorId(id, usuario) {
+  const esAdmin = usuario.rol === 'admin';
+  const query = esAdmin
+    ? `SELECT a.*, c.nombre AS camara_nombre, s.tipo AS sensor_tipo
+       FROM alertas a
+       JOIN camaras c ON c.id = a.camara_id
+       LEFT JOIN sensores s ON s.id = a.sensor_id
+       WHERE a.id = $1`
+    : `SELECT a.*, c.nombre AS camara_nombre, s.tipo AS sensor_tipo
+       FROM alertas a
+       JOIN camaras c ON c.id = a.camara_id
+       LEFT JOIN sensores s ON s.id = a.sensor_id
+       WHERE a.id = $1 AND c.sede_id = ANY($2)`;
+  const params = esAdmin ? [id] : [id, usuario.sedes];
+  const result = await pool.query(query, params);
   return result.rows[0] || null;
 }
 

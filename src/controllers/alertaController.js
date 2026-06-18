@@ -6,7 +6,7 @@ async function listar(req, res) {
       ? req.query.resuelta === 'true'
       : undefined;
     const limite = req.query.limite || 50;
-    const alertas = await alertaService.obtenerAlertas({ resuelta, limite });
+    const alertas = await alertaService.obtenerAlertas({ resuelta, limite, usuario: req.usuario });
     res.json({ datos: alertas, total: alertas.length });
   } catch (err) {
     console.error('[alertaController] Error:', err.message);
@@ -16,7 +16,7 @@ async function listar(req, res) {
 
 async function obtenerPorId(req, res) {
   try {
-    const alerta = await alertaService.obtenerAlertaPorId(req.params.id);
+    const alerta = await alertaService.obtenerAlertaPorId(req.params.id, req.usuario);
     if (!alerta) return res.status(404).json({ error: 'Alerta no encontrada' });
     res.json({ datos: alerta });
   } catch (err) {

@@ -37,4 +37,21 @@ function requiereRol(...roles) {
   };
 }
 
-module.exports = { verificarToken, requiereRol };
+function verificarAccesoSede(req, res, next) {
+  const { sedes, rol } = req.usuario;
+  const sedeId = req.query.sede_id ? parseInt(req.query.sede_id, 10) : null;
+
+  if (rol === 'admin') return next();
+
+  if (!sedes || sedes.length === 0) {
+    return res.status(403).json({ error: 'No tienes acceso a ninguna sede' });
+  }
+
+  if (sedeId && !sedes.includes(sedeId)) {
+    return res.status(403).json({ error: 'No tienes acceso a esta sede' });
+  }
+
+  next();
+}
+
+module.exports = { verificarToken, requiereRol, verificarAccesoSede };

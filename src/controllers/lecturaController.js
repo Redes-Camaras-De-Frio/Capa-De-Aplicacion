@@ -4,7 +4,7 @@ async function listar(req, res) {
   try {
     const sensorId = req.query.sensor_id || null;
     const limite = req.query.limite || 50;
-    const lecturas = await lecturaService.obtenerLecturas(sensorId, limite);
+    const lecturas = await lecturaService.obtenerLecturas(sensorId, limite, req.usuario);
     res.json({ datos: lecturas, total: lecturas.length });
   } catch (err) {
     console.error('[lecturaController] Error:', err.message);
@@ -14,7 +14,7 @@ async function listar(req, res) {
 
 async function ultimasPorCamara(req, res) {
   try {
-    const lecturas = await lecturaService.obtenerUltimasLecturasPorCamara();
+    const lecturas = await lecturaService.obtenerUltimasLecturasPorCamara(req.usuario);
     res.json({ datos: lecturas });
   } catch (err) {
     console.error('[lecturaController] Error:', err.message);

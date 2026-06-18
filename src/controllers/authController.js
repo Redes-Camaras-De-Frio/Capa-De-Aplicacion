@@ -2,7 +2,7 @@ const authService = require('../services/authService');
 
 async function registrar(req, res) {
   try {
-    const { nombre, email, password, rol } = req.body;
+    const { nombre, email, password, rol, sedes } = req.body;
 
     if (!nombre || !email || !password || !rol) {
       return res.status(400).json({ error: 'nombre, email, password y rol son requeridos' });
@@ -16,7 +16,11 @@ async function registrar(req, res) {
       return res.status(400).json({ error: `rol debe ser uno de: ${rolesValidos.join(', ')}` });
     }
 
-    const resultado = await authService.registrar({ nombre, email, password, rol });
+    if (sedes && (!Array.isArray(sedes) || sedes.length === 0)) {
+      return res.status(400).json({ error: 'sedes debe ser un array no vacío de IDs de sede' });
+    }
+
+    const resultado = await authService.registrar({ nombre, email, password, rol, sedes });
 
     if (resultado.error) {
       return res.status(409).json({ error: resultado.error });

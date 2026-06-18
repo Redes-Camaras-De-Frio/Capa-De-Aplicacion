@@ -2,7 +2,7 @@ const sedeService = require('../services/sedeService');
 
 async function listar(req, res) {
   try {
-    const sedes = await sedeService.obtenerTodasLasSedes();
+    const sedes = await sedeService.obtenerTodasLasSedes(req.usuario);
     res.json({ datos: sedes, total: sedes.length });
   } catch (err) {
     console.error('[sedeController] Error:', err.message);
@@ -12,7 +12,7 @@ async function listar(req, res) {
 
 async function obtenerPorId(req, res) {
   try {
-    const sede = await sedeService.obtenerSedePorId(req.params.id);
+    const sede = await sedeService.obtenerSedePorId(req.params.id, req.usuario);
     if (!sede) return res.status(404).json({ error: 'Sede no encontrada' });
     res.json({ datos: sede });
   } catch (err) {

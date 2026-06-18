@@ -120,6 +120,24 @@ const swaggerSpec = swaggerJsdoc(options);
  *                 nombre: { type: string, example: "Administrador" }
  *                 email: { type: string, example: "admin@farmacia.com" }
  *                 rol: { type: string, example: "admin" }
+ *                 sedes:
+ *                   type: array
+ *                   items: { type: integer }
+ *                   nullable: true
+ *                   description: "IDs de sedes a las que tiene acceso (null = todas)"
+ *
+ *     RegisterBody:
+ *       type: object
+ *       properties:
+ *         nombre: { type: string, example: "Nuevo Usuario" }
+ *         email: { type: string, example: "nuevo@farmacia.com" }
+ *         password: { type: string, example: "miPassword123" }
+ *         rol: { type: string, enum: [admin, operador, tecnico] }
+ *         sedes:
+ *           type: array
+ *           items: { type: integer }
+ *           example: [1, 2]
+ *           description: "IDs de sedes a asignar (solo para admin, ignorado si rol=admin)"
  *
  *     Error:
  *       type: object
@@ -131,7 +149,7 @@ const swaggerSpec = swaggerJsdoc(options);
  *       in: query
  *       name: sede_id
  *       schema: { type: integer }
- *       description: Filtrar por sede
+ *       description: "Filtrar por sede (el usuario debe tener acceso a esa sede)"
  *     camaraId:
  *       in: query
  *       name: camara_id

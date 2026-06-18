@@ -1,25 +1,42 @@
 const { pool } = require('../config/database');
 
-async function obtenerTodosLosSensores(camaraId) {
+async function obtenerTodosLosSensores(camaraId, usuario) {
+  const esAdmin = usuario.rol === 'admin';
+  const sedeFilter = esAdmin ? '' : ' AND c.sede_id = ANY($N)';
+
   const query = camaraId
-    ? 'SELECT * FROM sensores WHERE camara_id = $1 ORDER BY id'
+    ? `SELECT s.*, c.nombre AS camara_nombre
+       FROM sensores s
+       JOIN camaras c ON c.id = s.camara_id
+       WHERE s.camara_id = $1${sedeFilter.replace('$N', '$2')}
+       ORDER BY s.id`
     : `SELECT s.*, c.nombre AS camara_nombre
        FROM sensores s
        JOIN camaras c ON c.id = s.camara_id
+       ${sedeFilter ? 'WHERE ' + sedeFilter.replace('$N', '$1').substring(5) : ''}
        ORDER BY s.id`;
-  const params = camaraId ? [camaraId] : [];
+
+  const params = esAdmin
+    ? (camaraId ? [camaraId] : [])
+    : (camaraId ? [camaraId, usuario.sedes] : [usuario.sedes]);
+
   const result = await pool.query(query, params);
   return result.rows;
 }
 
-async function obtenerSensorPorId(id) {
-  const result = await pool.query(
-    `SELECT s.*, c.nombre AS camara_nombre
-     FROM sensores s
-     JOIN camaras c ON c.id = s.camara_id
-     WHERE s.id = $1`,
-    [id]
-  );
+async function obtenerSensorPorId(id, usuario) {
+  const esAdmin = usuario.rol === 'admin';
+  const query = esAdmin
+    ? `SELECT s.*, c.nombre AS camara_nombre
+       FROM sensores s
+       JOIN camaras c ON c.id = s.camara_id
+       WHERE s.id = $1`
+    : `SELECT s.*, c.nombre AS camara_nombre
+       FROM sensores s
+       JOIN camaras c ON c.id = s.camara_id
+       WHERE s.id = $1 AND c.sede_id = ANY($2)`;
+  const params = esAdmin ? [id] : [id, usuario.sedes];
+  const result = await pool.query(query, params);
   return result.rows[0] || null;
 }
 

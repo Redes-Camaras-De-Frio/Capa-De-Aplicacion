@@ -3,7 +3,7 @@ const camaraService = require('../services/camaraService');
 async function listar(req, res) {
   try {
     const sedeId = req.query.sede_id || null;
-    const camaras = await camaraService.obtenerTodasLasCamaras(sedeId);
+    const camaras = await camaraService.obtenerTodasLasCamaras(sedeId, req.usuario);
     res.json({ datos: camaras, total: camaras.length });
   } catch (err) {
     console.error('[camaraController] Error:', err.message);
@@ -13,7 +13,7 @@ async function listar(req, res) {
 
 async function obtenerPorId(req, res) {
   try {
-    const camara = await camaraService.obtenerCamaraPorId(req.params.id);
+    const camara = await camaraService.obtenerCamaraPorId(req.params.id, req.usuario);
     if (!camara) return res.status(404).json({ error: 'Cámara no encontrada' });
     res.json({ datos: camara });
   } catch (err) {
