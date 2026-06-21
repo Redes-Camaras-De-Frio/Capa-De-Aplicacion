@@ -33,6 +33,10 @@ async function crear(req, res) {
       return res.status(400).json({ error: 'temp_min debe ser menor que temp_max' });
     }
 
+    if (req.usuario.rol === 'operador' && !req.usuario.sedes.includes(sede_id)) {
+      return res.status(403).json({ error: 'No tienes permiso para crear cámaras en esta sede' });
+    }
+
     const camara = await camaraService.crearCamara({ sede_id, nombre, temp_min, temp_max, activa });
     res.status(201).json({ datos: camara });
   } catch (err) {
@@ -53,6 +57,11 @@ async function actualizar(req, res) {
     }
     if (temp_min !== undefined && temp_max !== undefined && temp_min >= temp_max) {
       return res.status(400).json({ error: 'temp_min debe ser menor que temp_max' });
+    }
+
+    const existente = await camaraService.obtenerCamaraPorId(req.params.id, req.usuario);
+    if (!existente) {
+      return res.status(404).json({ error: 'Cámara no encontrada o no tienes acceso' });
     }
 
     const camara = await camaraService.actualizarCamara(req.params.id, { nombre, temp_min, temp_max, activa });

@@ -97,7 +97,7 @@ router.get('/:id', validateId, sensorController.obtenerPorId);
  *       400:
  *         description: Datos inválidos
  */
-router.post('/', verificarToken, requiereRol('admin', 'tecnico'), sensorController.crear);
+router.post('/', verificarToken, requiereRol('admin', 'operador'), sensorController.crear);
 
 /**
  * @openapi
@@ -135,7 +135,7 @@ router.post('/', verificarToken, requiereRol('admin', 'tecnico'), sensorControll
  *       404:
  *         description: Sensor no encontrado
  */
-router.put('/:id', validateId, verificarToken, requiereRol('admin', 'tecnico'), sensorController.actualizar);
+router.put('/:id', validateId, verificarToken, requiereRol('admin', 'operador'), sensorController.actualizar);
 
 /**
  * @openapi
@@ -156,6 +156,6 @@ router.put('/:id', validateId, verificarToken, requiereRol('admin', 'tecnico'), 
  *       404:
  *         description: Sensor no encontrado
  */
-router.delete('/:id', validateId, verificarToken, requiereRol('admin'), sensorController.eliminar);
+router.delete('/:id', validateId, verificarToken, requiereRol('admin', 'operador'), sensorController.eliminar);
 
 module.exports = router;

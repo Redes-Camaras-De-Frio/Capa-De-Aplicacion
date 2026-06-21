@@ -120,8 +120,8 @@ Capa_de_Aplicacion/
 
 | Método | Ruta | Rol | Descripción |
 |---|---|---|---|
-| GET | `/api/sedes` | admin, operador, tecnico | Lista todas las sedes |
-| GET | `/api/sedes/:id` | admin, operador, tecnico | Obtiene una sede por ID |
+| GET | `/api/sedes` | admin, operador | Lista todas las sedes |
+| GET | `/api/sedes/:id` | admin, operador | Obtiene una sede por ID |
 | POST | `/api/sedes` | admin | Crea una nueva sede |
 | PUT | `/api/sedes/:id` | admin | Actualiza una sede existente |
 | DELETE | `/api/sedes/:id` | admin | Elimina una sede |
@@ -132,10 +132,10 @@ Capa_de_Aplicacion/
 
 | Método | Ruta | Rol | Descripción |
 |---|---|---|---|
-| GET | `/api/camaras?sede_id=` | admin, operador, tecnico | Lista cámaras (filtro por sede) |
-| GET | `/api/camaras/:id` | admin, operador, tecnico | Obtiene una cámara por ID |
-| POST | `/api/camaras` | admin | Crea una nueva cámara |
-| PUT | `/api/camaras/:id` | admin, tecnico | Actualiza una cámara |
+| GET | `/api/camaras?sede_id=` | admin, operador | Lista cámaras (filtro por sede) |
+| GET | `/api/camaras/:id` | admin, operador | Obtiene una cámara por ID |
+| POST | `/api/camaras` | admin, operador | Crea una nueva cámara (operador solo en sus sedes) |
+| PUT | `/api/camaras/:id` | admin, operador | Actualiza una cámara (operador solo en sus sedes) |
 | DELETE | `/api/camaras/:id` | admin | Elimina una cámara |
 
 **Validaciones:** `sede_id`, `nombre`, `temp_min`, `temp_max` requeridos. `temp_min` debe ser menor a `temp_max`.
@@ -144,11 +144,11 @@ Capa_de_Aplicacion/
 
 | Método | Ruta | Rol | Descripción |
 |---|---|---|---|
-| GET | `/api/sensores?camara_id=` | admin, operador, tecnico | Lista sensores (filtro por cámara) |
-| GET | `/api/sensores/:id` | admin, operador, tecnico | Obtiene un sensor por ID |
-| POST | `/api/sensores` | admin, tecnico | Crea un nuevo sensor |
-| PUT | `/api/sensores/:id` | admin, tecnico | Actualiza un sensor |
-| DELETE | `/api/sensores/:id` | admin | Elimina un sensor |
+| GET | `/api/sensores?camara_id=` | admin, operador | Lista sensores (filtro por cámara) |
+| GET | `/api/sensores/:id` | admin, operador | Obtiene un sensor por ID |
+| POST | `/api/sensores` | admin, operador | Crea un nuevo sensor (operador solo en sus sedes) |
+| PUT | `/api/sensores/:id` | admin, operador | Actualiza un sensor (operador solo en sus sedes) |
+| DELETE | `/api/sensores/:id` | admin, operador | Soft delete: desactiva sensor (pone `activo=false`) |
 
 **Tipos de sensor válidos:** `temperatura`, `humedad`, `apertura`, `movimiento`, `agua`, `humo`
 
@@ -156,8 +156,8 @@ Capa_de_Aplicacion/
 
 | Método | Ruta | Rol | Descripción |
 |---|---|---|---|
-| GET | `/api/lecturas?sensor_id=&limite=` | admin, operador, tecnico | Histórico de lecturas |
-| GET | `/api/lecturas/ultimas-por-camara` | admin, operador, tecnico | Última temperatura por cámara |
+| GET | `/api/lecturas?sensor_id=&limite=` | admin, operador | Histórico de lecturas |
+| GET | `/api/lecturas/ultimas-por-camara` | admin, operador | Última temperatura por cámara |
 
 **Parámetros:** `sensor_id` (opcional) filtra por sensor; `limite` (opcional, default 50) controla la cantidad.
 
@@ -165,15 +165,15 @@ Capa_de_Aplicacion/
 
 | Método | Ruta | Rol | Descripción |
 |---|---|---|---|
-| GET | `/api/alertas?resuelta=&limite=` | admin, operador, tecnico | Lista alertas |
-| GET | `/api/alertas/:id` | admin, operador, tecnico | Obtiene una alerta por ID |
+| GET | `/api/alertas?resuelta=&limite=` | admin, operador | Lista alertas |
+| GET | `/api/alertas/:id` | admin, operador | Obtiene una alerta por ID |
 | PATCH | `/api/alertas/:id/resolver` | admin, operador | Resuelve una alerta |
 
 ### 5.7 Dashboard
 
 | Método | Ruta | Rol | Descripción |
 |---|---|---|---|
-| GET | `/api/dashboard` | admin, operador, tecnico | Resumen general del sistema |
+| GET | `/api/dashboard` | admin, operador | Resumen general del sistema |
 
 **Respuesta:** conteo de sedes, cámaras, sensores, alertas activas y últimas lecturas de temperatura.
 
@@ -181,17 +181,18 @@ Capa_de_Aplicacion/
 
 ## 6. Matriz de roles y permisos
 
-| Acción | admin | operador | tecnico |
-|---|---|---|---|
-| GET (sedes, cámaras, sensores, lecturas, dashboard) | ✅ | ✅ | ✅ |
-| PATCH resolver alerta | ✅ | ✅ | ❌ |
-| POST / PUT / DELETE sedes | ✅ | ❌ | ❌ |
-| POST cámaras | ✅ | ❌ | ❌ |
-| PUT cámaras | ✅ | ❌ | ✅ |
-| DELETE cámaras | ✅ | ❌ | ❌ |
-| POST / PUT sensores | ✅ | ❌ | ✅ |
-| DELETE sensores | ✅ | ❌ | ❌ |
-| POST register (crear usuarios) | ✅ | ❌ | ❌ |
+| Acción | admin | operador |
+|---|---|---|
+| GET (sedes, cámaras, sensores, lecturas, dashboard) | ✅ | ✅ |
+| PATCH resolver alerta | ✅ | ✅ |
+| POST / PUT / DELETE sedes | ✅ | ❌ |
+| POST cámaras | ✅ | ✅ (solo en sus sedes) |
+| PUT cámaras | ✅ | ✅ (solo en sus sedes) |
+| DELETE cámaras | ✅ | ❌ |
+| POST sensores | ✅ | ✅ (solo en sus sedes) |
+| PUT sensores | ✅ | ✅ (solo en sus sedes) |
+| DELETE sensores (soft delete) | ✅ | ✅ (pone `activo=false`) |
+| POST register (crear usuarios) | ✅ | ❌ |
 
 ---
 
@@ -263,7 +264,6 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:3000/api/dashboard
 |---|---|---|
 | admin@farmacia.com | admin123 | admin |
 | operador@farmacia.com | admin123 | operador |
-| tecnico@farmacia.com | admin123 | tecnico |
 
 ---
 
@@ -273,7 +273,7 @@ La capa de aplicación cuenta con:
 - ✅ Backend funcional con Node.js + Express
 - ✅ Conexión segura a PostgreSQL
 - ✅ Autenticación JWT con login y registro
-- ✅ Autorización por roles (admin, operador, tecnico)
+- ✅ Autorización por roles (admin, operador)
 - ✅ CRUD completo de sedes, cámaras y sensores
 - ✅ Consultas de lecturas y alertas
 - ✅ Dashboard con resumen general

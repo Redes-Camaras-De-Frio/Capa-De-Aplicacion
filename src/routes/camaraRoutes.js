@@ -106,7 +106,7 @@ router.get('/:id', validateId, camaraController.obtenerPorId);
  *       400:
  *         description: Datos inválidos
  */
-router.post('/', verificarToken, requiereRol('admin'), camaraController.crear);
+router.post('/', verificarToken, requiereRol('admin', 'operador'), camaraController.crear);
 
 /**
  * @openapi
@@ -145,7 +145,7 @@ router.post('/', verificarToken, requiereRol('admin'), camaraController.crear);
  *       404:
  *         description: Cámara no encontrada
  */
-router.put('/:id', validateId, verificarToken, requiereRol('admin', 'tecnico'), camaraController.actualizar);
+router.put('/:id', validateId, verificarToken, requiereRol('admin', 'operador'), camaraController.actualizar);
 
 /**
  * @openapi

@@ -70,7 +70,10 @@ async function actualizarSensor(id, { tipo, unidad, activo }) {
 }
 
 async function eliminarSensor(id) {
-  const result = await pool.query('DELETE FROM sensores WHERE id = $1 RETURNING id', [id]);
+  const result = await pool.query(
+    'UPDATE sensores SET activo = false WHERE id = $1 RETURNING *',
+    [id]
+  );
   return result.rows[0] || null;
 }
 

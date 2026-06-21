@@ -116,8 +116,7 @@ Servicios levantados:
 | Email | Password | Rol |
 |---|---|---|
 | admin@farmacia.com | admin123 | **admin** — acceso total |
-| operador@farmacia.com | admin123 | **operador** — solo lectura + resolver alertas |
-| tecnico@farmacia.com | admin123 | **tecnico** — gestiona sensores y cámaras |
+| operador@farmacia.com | admin123 | **operador** — monitorea, gestiona sensores/cámaras en sus sedes |
 
 ---
 
@@ -161,8 +160,8 @@ Respuesta: 201 { "datos": { "id": 4, "nombre": "Nuevo Usuario", "email": "nuevo@
 
 | Método | Ruta | Rol | Descripción |
 |---|---|---|---|
-| `GET` | `/api/sedes` | admin, operador, tecnico | Listar todas |
-| `GET` | `/api/sedes/:id` | admin, operador, tecnico | Obtener por ID |
+| `GET` | `/api/sedes` | admin, operador | Listar todas |
+| `GET` | `/api/sedes/:id` | admin, operador | Obtener por ID |
 | `POST` | `/api/sedes` | admin | Crear |
 | `PUT` | `/api/sedes/:id` | admin | Actualizar |
 | `DELETE` | `/api/sedes/:id` | admin | Eliminar |
@@ -187,10 +186,10 @@ Respuesta: 200
 
 | Método | Ruta | Rol | Descripción |
 |---|---|---|---|
-| `GET` | `/api/camaras?sede_id=` | admin, operador, tecnico | Listar (filtro por sede) |
-| `GET` | `/api/camaras/:id` | admin, operador, tecnico | Obtener por ID |
-| `POST` | `/api/camaras` | admin | Crear |
-| `PUT` | `/api/camaras/:id` | admin, tecnico | Actualizar |
+| `GET` | `/api/camaras?sede_id=` | admin, operador | Listar (filtro por sede) |
+| `GET` | `/api/camaras/:id` | admin, operador | Obtener por ID |
+| `POST` | `/api/camaras` | admin, operador | Crear (operador solo en sus sedes) |
+| `PUT` | `/api/camaras/:id` | admin, operador | Actualizar (operador solo en sus sedes) |
 | `DELETE` | `/api/camaras/:id` | admin | Eliminar |
 
 **Crear cámara:**
@@ -208,11 +207,11 @@ Respuesta: 201
 
 | Método | Ruta | Rol | Descripción |
 |---|---|---|---|
-| `GET` | `/api/sensores?camara_id=` | admin, operador, tecnico | Listar (filtro por cámara) |
-| `GET` | `/api/sensores/:id` | admin, operador, tecnico | Obtener por ID |
-| `POST` | `/api/sensores` | admin, tecnico | Crear |
-| `PUT` | `/api/sensores/:id` | admin, tecnico | Actualizar |
-| `DELETE` | `/api/sensores/:id` | admin | Eliminar |
+| `GET` | `/api/sensores?camara_id=` | admin, operador | Listar (filtro por cámara) |
+| `GET` | `/api/sensores/:id` | admin, operador | Obtener por ID |
+| `POST` | `/api/sensores` | admin, operador | Crear (operador solo en sus sedes) |
+| `PUT` | `/api/sensores/:id` | admin, operador | Actualizar (operador solo en sus sedes) |
+| `DELETE` | `/api/sensores/:id` | admin, operador | Soft delete (pone `activo=false`) |
 
 **Crear sensor:**
 ```json
@@ -227,8 +226,8 @@ Respuesta: 201
 
 | Método | Ruta | Rol | Descripción |
 |---|---|---|---|
-| `GET` | `/api/lecturas?sensor_id=&limite=` | admin, operador, tecnico | Histórico de lecturas |
-| `GET` | `/api/lecturas/ultimas-por-camara` | admin, operador, tecnico | Última temperatura por cámara |
+| `GET` | `/api/lecturas?sensor_id=&limite=` | admin, operador | Histórico de lecturas |
+| `GET` | `/api/lecturas/ultimas-por-camara` | admin, operador | Última temperatura por cámara |
 
 - `sensor_id` (opcional): filtra por sensor específico
 - `limite` (opcional, default 50): cantidad de registros
@@ -239,8 +238,8 @@ Respuesta: 201
 
 | Método | Ruta | Rol | Descripción |
 |---|---|---|---|
-| `GET` | `/api/alertas?resuelta=&limite=` | admin, operador, tecnico | Listar alertas |
-| `GET` | `/api/alertas/:id` | admin, operador, tecnico | Obtener por ID |
+| `GET` | `/api/alertas?resuelta=&limite=` | admin, operador | Listar alertas |
+| `GET` | `/api/alertas/:id` | admin, operador | Obtener por ID |
 | `PATCH` | `/api/alertas/:id/resolver` | admin, operador | Resolver alerta |
 
 **Resolver alerta:**
@@ -256,7 +255,7 @@ Respuesta: 200
 
 | Método | Ruta | Rol | Descripción |
 |---|---|---|---|
-| `GET` | `/api/dashboard` | admin, operador, tecnico | Resumen general |
+| `GET` | `/api/dashboard` | admin, operador | Resumen general |
 
 **Respuesta:**
 ```json
@@ -278,14 +277,15 @@ Respuesta: 200
 
 ## 7. Roles y permisos
 
-| Recurso | admin | operador | tecnico |
+| Recurso | admin | operador |
 |---|---|---|---|
-| GET sedes, cámaras, sensores, lecturas, dashboard | ✅ | ✅ | ✅ |
-| PATCH resolver alerta | ✅ | ✅ | ❌ |
-| POST / PUT / DELETE sedes | ✅ | ❌ | ❌ |
-| POST / PUT / DELETE cámaras | ✅ | ❌ | ✅ (solo PUT) |
-| POST / PUT / DELETE sensores | ✅ | ❌ | ✅ (POST y PUT) |
-| DELETE cámaras / sensores | ✅ | ❌ | ❌ |
+| GET sedes, cámaras, sensores, lecturas, dashboard | ✅ | ✅ |
+| PATCH resolver alerta | ✅ | ✅ |
+| POST / PUT / DELETE sedes | ✅ | ❌ |
+| POST / PUT cámaras | ✅ | ✅ (solo en sus sedes) |
+| DELETE cámaras | ✅ | ❌ |
+| POST / PUT sensores | ✅ | ✅ (solo en sus sedes) |
+| DELETE sensores (soft delete) | ✅ | ✅ (pone `activo=false`) |
 
 ---
 

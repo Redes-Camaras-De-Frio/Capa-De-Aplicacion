@@ -11,7 +11,7 @@ async function registrar(req, res) {
       return res.status(400).json({ error: 'Password debe tener al menos 6 caracteres' });
     }
 
-    const rolesValidos = ['admin', 'operador', 'tecnico'];
+    const rolesValidos = ['admin', 'operador'];
     if (!rolesValidos.includes(rol)) {
       return res.status(400).json({ error: `rol debe ser uno de: ${rolesValidos.join(', ')}` });
     }

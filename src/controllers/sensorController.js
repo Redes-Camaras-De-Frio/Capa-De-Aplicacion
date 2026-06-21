@@ -1,4 +1,5 @@
 const sensorService = require('../services/sensorService');
+const camaraService = require('../services/camaraService');
 
 async function listar(req, res) {
   try {
@@ -35,6 +36,13 @@ async function crear(req, res) {
       return res.status(400).json({ error: `tipo debe ser uno de: ${tiposValidos.join(', ')}` });
     }
 
+    if (req.usuario.rol === 'operador') {
+      const camara = await camaraService.obtenerCamaraPorId(camara_id, req.usuario);
+      if (!camara) {
+        return res.status(403).json({ error: 'No tienes permiso para agregar sensores a esta cámara' });
+      }
+    }
+
     const sensor = await sensorService.crearSensor({ camara_id, tipo, unidad, activo });
     res.status(201).json({ datos: sensor });
   } catch (err) {
@@ -61,8 +69,12 @@ async function actualizar(req, res) {
       }
     }
 
+    const existente = await sensorService.obtenerSensorPorId(req.params.id, req.usuario);
+    if (!existente) {
+      return res.status(404).json({ error: 'Sensor no encontrado o no tienes acceso' });
+    }
+
     const sensor = await sensorService.actualizarSensor(req.params.id, { tipo, unidad, activo });
-    if (!sensor) return res.status(404).json({ error: 'Sensor no encontrado' });
     res.json({ datos: sensor });
   } catch (err) {
     console.error('[sensorController] Error:', err.message);
@@ -72,9 +84,13 @@ async function actualizar(req, res) {
 
 async function eliminar(req, res) {
   try {
+    const existente = await sensorService.obtenerSensorPorId(req.params.id, req.usuario);
+    if (!existente) {
+      return res.status(404).json({ error: 'Sensor no encontrado o no tienes acceso' });
+    }
+
     const sensor = await sensorService.eliminarSensor(req.params.id);
-    if (!sensor) return res.status(404).json({ error: 'Sensor no encontrado' });
-    res.json({ mensaje: 'Sensor eliminado exitosamente' });
+    res.json({ mensaje: 'Sensor desactivado exitosamente (soft delete)', datos: sensor });
   } catch (err) {
     console.error('[sensorController] Error:', err.message);
     res.status(500).json({ error: 'Error al eliminar sensor' });
