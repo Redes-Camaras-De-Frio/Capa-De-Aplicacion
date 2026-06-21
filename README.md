@@ -278,7 +278,7 @@ Respuesta: 200
 ## 7. Roles y permisos
 
 | Recurso | admin | operador |
-|---|---|---|---|
+|---|---|---|
 | GET sedes, cámaras, sensores, lecturas, dashboard | ✅ | ✅ |
 | PATCH resolver alerta | ✅ | ✅ |
 | POST / PUT / DELETE sedes | ✅ | ❌ |
